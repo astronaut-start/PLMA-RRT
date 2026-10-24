@@ -1,108 +1,104 @@
-[README.md](https://github.com/user-attachments/files/33907351/README.md)
+[README_EN.md](https://github.com/user-attachments/files/33908037/README_EN.md)
 # PLMA-RRT
 
-三维路径规划的 MATLAB 实现，包含 PLMA-RRT 本体和七种对比算法，以及三个所使用的场景。
+A MATLAB implementation of 3D path planning, containing PLMA-RRT itself and seven comparison algorithms, together with the three scenarios used.
 
-## 环境
+## Environment
 
-解压之后在根目录启动 MATLAB。
-## 运行
+After extracting the archive, launch MATLAB from the root directory.
+
+## Running
 
 ```matlab
-% 在 PLMA-RRT-Code 目录下
+% In the PLMA-RRT-Code directory
 [result, scene, options] = run_planner('PLMA', 'S1', 1);
 result.success
 result.path
 result.wall_time
 
-% 更换算法和更换场景，显式给搜索预算
+% Switch the algorithm and the scenario, and give the search budget explicitly
 r = run_planner('BI', 'S2', 1, ...
     struct('max_iter', 30000, 'time_limit', 120));
 
-% 仅运行环境
+% Run the environment only
 r = run_planner('PLMA', 'S3', 1, ...
     struct('max_iter', 100, 'time_limit', 2));
 ```
 
-`run_planner(algorithm, environment, seed, overrides)` 单次运行一个算例，默认为 `PLMA`、`S1`、`1`、空 struct。
+`run_planner(algorithm, environment, seed, overrides)` runs a single case. The defaults are `PLMA`, `S1`, `1`, and an empty struct.
 
-## 目录结构
+## Directory structure
 
 ```text
 PLMA-RRT-Code/
   README.md
-  run_planner.m              # 单算例入口
-  planner_options.m          # 预算和按场景缩放的参数
+  run_planner.m              # single-case entry point
+  planner_options.m          # budget and per-scenario scaled parameters
   environments/
     S1.json  S2.json  S3.json
     load_environment.m
   src/
-    +planners/               # 八个算法入口和它们的支撑函数
-    +rr/                     # 树结构、近邻、重连、碰撞检测
-    plma_repaired/           # PLMA 核心、方向控制、自适应步长
+    +planners/               # the eight algorithm entry points and their support functions
+    +rr/                     # tree structure, nearest neighbors, rewiring, collision checking
+    plma_repaired/           # PLMA core, steering control, adaptive step size
       plma_adaptive.m
       common/
       controller/
 ```
 
-## 算法
+## Algorithms
 
-| ID | 算法 | 入口（`src/+planners`） | 原生停止条件 | 出处 |
+| ID | Algorithm | Entry point (`src/+planners`) | Native stopping condition | Source |
 |---|---|---|---|---|
-| `GB` | 带目标偏置的 RRT* | `gb_karaman2011.m` | 搜索预算 | [Karaman & Frazzoli, 2011](https://doi.org/10.1177/0278364911406761) |
-| `BI` | BI-RRT* | `bi_jordan2013.m` | 搜索预算 | [Jordan & Perez, 2013](https://hdl.handle.net/1721.1/79884) |
-| `F` | F-RRT* | `frrt_liao2021.m` | 首条可行路径 | [Liao et al., 2021](https://doi.org/10.1016/j.eswa.2021.115457) |
-| `Q` | Q-RRT* | `qrrt_jeong2019.m` | 搜索预算 | [Jeong et al., 2019](https://doi.org/10.1016/j.eswa.2019.01.032) |
-| `BAI` | BAI-RRT* | `bai_xu2025.m` | 搜索预算，之后做后处理 | [Xu et al., 2025](https://doi.org/10.1016/j.oceaneng.2025.121511) |
-| `IBIP` | IBI-P-RRT* | `ibip_fan2023.m` | 搜索预算，之后做后处理 | [Fan et al., 2023](https://doi.org/10.1016/j.eswa.2022.119137) |
-| `BIAPF` | BI-APF-RRT* | `biapf_huang2024.m` | 首条可行路径 | [Huang et al., 2024](https://doi.org/10.3390/drones8120760) |
-| `PLMA` | PLMA-RRT | `plma_repaired.m` | 首次连通 | 本仓库实现 |
+| `GB` | RRT* with goal bias | `gb_karaman2011.m` | search budget | [Karaman & Frazzoli, 2011](https://doi.org/10.1177/0278364911406761) |
+| `BI` | BI-RRT* | `bi_jordan2013.m` | search budget | [Jordan & Perez, 2013](https://hdl.handle.net/1721.1/79884) |
+| `F` | F-RRT* | `frrt_liao2021.m` | first feasible path | [Liao et al., 2021](https://doi.org/10.1016/j.eswa.2021.115457) |
+| `Q` | Q-RRT* | `qrrt_jeong2019.m` | search budget | [Jeong et al., 2019](https://doi.org/10.1016/j.eswa.2019.01.032) |
+| `BAI` | BAI-RRT* | `bai_xu2025.m` | search budget, followed by post-processing | [Xu et al., 2025](https://doi.org/10.1016/j.oceaneng.2025.121511) |
+| `IBIP` | IBI-P-RRT* | `ibip_fan2023.m` | search budget, followed by post-processing | [Fan et al., 2023](https://doi.org/10.1016/j.eswa.2022.119137) |
+| `BIAPF` | BI-APF-RRT* | `biapf_huang2024.m` | first feasible path | [Huang et al., 2024](https://doi.org/10.3390/drones8120760) |
+| `PLMA` | PLMA-RRT | `plma_repaired.m` | first connection | implemented in this repository |
 
-七个对比算法代码来源通过对应原文复现，所提供的已完成三维适配。。
+The code for the seven comparison algorithms was reproduced from the corresponding original papers, and the completed 3D adaptation is provided.
 
+## Scenarios
 
+Coordinates and lengths are all in meters. `space` is the `[min, max]` range for each of x/y/z, and `sf` is the scale factor by which the algorithm parameters are scaled.
 
-## 场景
-
-坐标和长度单位均为米。`space` 是 x/y/z 各自的 `[min, max]`，`sf` 为缩放因子，算法参数会其缩放。
-| 场景 | 工作空间 (x / y / z) | 起点 | 终点 | 障碍数 | `sf` |
+| Scenario | Workspace (x / y / z) | Start | Goal | Number of obstacles | `sf` |
 |---|---|---|---|---|---|
 | S1 | [0,200] / [0,200] / [0,100] | [0,0,0] | [200,200,50] | 50 | 1 |
 | S2 | [0,20] / [0,20] / [0,20] | [0,0,0] | [20,20,15] | 21 | 0.1 |
 | S3 | [0,20] / [0,20] / [0,20] | [0,0,0] | [20,20,15] | 8 | 0.1 |
 
-障碍物每行是以中心为基准的描述，按长度区分：
+Each obstacle row is a center-based description, distinguished by its number of entries:
 
-- 4 元：球，`[cx, cy, cz, r]`
-- 5 元：竖直圆柱，`[cx, cy, cz, r, h]`
-- 6 元：轴对齐长方体，`[cx, cy, cz, dx, dy, dz]`
+- 4 entries: sphere, `[cx, cy, cz, r]`
+- 5 entries: vertical cylinder, `[cx, cy, cz, r, h]`
+- 6 entries: axis-aligned box, `[cx, cy, cz, dx, dy, dz]`
 
-碰撞检测判定为完整线段和闭合障碍体的相交。
+Collision checking tests the intersection between the complete line segment and the closed obstacle body.
 
+Trade-offs made while adapting each algorithm:
 
+- **GB** is RRT*.
+- **BI** implements the connect, bound, contract, and prune heuristics from the original paper; the local-consistency repairs and the parameters I chose can all be seen in the source.
+- **F / Q** share the geometry and interface in `fq_support.m`. The connection radius, the neighbor radius, and F's bisection distance are scaled per scenario in `planner_options.m`; these are the values I settled on for benchmarking.
+- **BAI** was originally for ship planning and has been adapted to 3D geometry. `theta_max = pi`, with empty start and goal headings, so that the hull turning constraints are disabled.
+- **IBI-P** is Fan et al.'s ImprovedBi-P-RRT*. The influence radius is `max(10*sf, max inscribed sphere radius of obstacles + sqrt(3)*step)`, and the repulsive gain is `(max workspace span/20)^2`.
+- **BIAPF** is implemented following Algorithms 5–9 and Figure 3 of the original paper.
 
-各算法适配时做的取舍：
+## Return values
 
-- **GB** 即 RRT*。
-- **BI** 实现了原文的连接、边界、收缩和剪枝启发式，局部一致性修复和我选用的参数在源码里都能看到。
-- **F / Q** 共用 `fq_support.m` 的几何和接口。连接半径、近邻半径和 F 的二分距离都在 `planner_options.m` 里按场景缩放，这些是我为做基准测试定的。
-- **BAI** 原文为船舶规划，进行了三维几何适配。`theta_max = pi`、起终点航向置空，防止船体转向约束了。
-- **IBI-P** 是 Fan 等人的 ImprovedBi-P-RRT*，影响半径取 `max(10*sf, 最大障碍内切球半径 + sqrt(3)*step)`，斥力增益取 `(最大工作空间跨度/20)^2`。
-- **BIAPF** 按原文算法 5–9 和图 3 实现。
-## 返回值
-
-| 字段 | 含义 |
+| Field | Meaning |
 |---|---|
-| `success` | 算法是否返回了路径 |
-| `path` | 最终路径，一行一个 `[x,y,z]`，失败时为空 |
-| `raw_path` | 平滑/后处理之前的搜索路径 |
-| `treeA`、`treeB` | 保留的搜索树（`X` 坐标、`p` 父节点索引、`c` 到根的代价），单树算法 `treeB` 为空 |
-| `iterations` | 外层迭代数 |
-| `first_time` | 内部记录的首解时间，未获得首解记为 `NaN` |
-| `elapsed` | 算法内部计时 |
-| `wall_time` | runner 量的完整调用耗时 |
-| `history` | 记录的解改进过程 |
-| `details` | 各算法自己的选项、停止原因和内部信息 |
-
-
-
+| `success` | whether the algorithm returned a path |
+| `path` | final path, one `[x,y,z]` per row; empty on failure |
+| `raw_path` | the searched path before smoothing/post-processing |
+| `treeA`, `treeB` | the retained search trees (`X` coordinates, `p` parent indices, `c` cost to root); `treeB` is empty for single-tree algorithms |
+| `iterations` | number of outer iterations |
+| `first_time` | the internally recorded time to first solution; `NaN` if no first solution was found |
+| `elapsed` | the algorithm's internal timing |
+| `wall_time` | the full call duration measured by the runner |
+| `history` | the recorded solution-improvement history |
+| `details` | each algorithm's own options, stopping reason, and internal information |
